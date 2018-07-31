@@ -18,7 +18,6 @@ class SimpleNet(nn.Module):
         self.my_layer3 = nn.Linear(hidden2_dim, out_dim)
 
     def forward(self, x):
-        print(x.size())
         x = x.reshape([-1, 784])
         # 黄熠华加了这个改尺寸
         x = self.my_layer1(x)
