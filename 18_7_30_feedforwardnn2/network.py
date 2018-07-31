@@ -33,19 +33,30 @@ test_data = datasets.MNIST(root='./data', train=False, transform=my_tf)
 test_data_loader = DataLoader(dataset=test_data, batch_size=batch_size)
 
 network = MyNet(28 * 28, 300, 100, 10)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print("Running on " + str(device))
+network.to(device)
 optimizer = optim.SGD(network.parameters(), lr=learning_rate)
 criterion = nn.CrossEntropyLoss()  # 这个括号好像必须加，不然报错
 
-for epoch in range(3):
+for epoch in range(50):
     print("Training......  epoch:{}".format(epoch))
-    for data in train_data_loader:
+    running_loss = 0.0  # using float
+    for i, data in enumerate(train_data_loader, 0):
         inputs, labels = data
+        inputs, labels = inputs.to(device), labels.to(device)
         outputs = network(inputs)
         _, predicted = torch.max(outputs, 1)
         optimizer.zero_grad()
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
+
+        # print the loss
+        running_loss += loss.item()
+        if i % 200 == 199:
+            print("[%d, %5d] loss: %.3f" % (epoch + 1, i+1, running_loss / 200))
+            running_loss = 0
 print("Training finished")
 
 correct = 0
@@ -56,6 +67,7 @@ total_num = [0]*10
 with torch.no_grad():
     for data in test_data_loader:
         inputs, labels = data
+        inputs, labels = inputs.to(device), labels.to(device)
         outputs = network(inputs)
         _, predicted = torch.max(outputs, 1)
         for (label, pred) in zip(labels, predicted):
