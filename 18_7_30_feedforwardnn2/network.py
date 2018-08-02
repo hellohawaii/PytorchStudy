@@ -46,7 +46,6 @@ for epoch in range(50):
         inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
         outputs = network(inputs)
-        _, predicted = torch.max(outputs, 1)
         optimizer.zero_grad()
         loss = criterion(outputs, labels)
         loss.backward()
